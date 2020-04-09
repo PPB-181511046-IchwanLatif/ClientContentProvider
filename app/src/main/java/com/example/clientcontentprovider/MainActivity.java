@@ -23,78 +23,81 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Cursor cursor = fetchCheeseCursor();
+        Cursor c = fetchCheesesCursor();
 
         RecyclerView list = findViewById(R.id.list);
         list.setLayoutManager(new LinearLayoutManager(list.getContext()));
         mCheeseAdapter = new CheeseAdapter();
-        mCheeseAdapter.setCheeses(cursor);
+        mCheeseAdapter.setCheeses(c);
         list.setAdapter(mCheeseAdapter);
+
     }
 
-    protected Cursor fetchCheeseCursor(){
+    protected Cursor fetchCheesesCursor(){
         Uri allCheeses = Uri.parse("content://com.example.android.contentprovidersample.provider/cheeses");
-        String[] projection = new String[]{
-                "_id", "name"
-        };
-        Cursor cursor;
+        String[] projection = new String[]
+                {"_id", "name"};
+        Cursor c;
         CursorLoader cursorLoader = new CursorLoader(
                 this,
                 allCheeses,
                 projection,
-                "name" + " LIKE ?",
-                new String[] {"I%"},
-                "name" + " ASC"
-        );
-        cursor = cursorLoader.loadInBackground();
-        return cursor;
+                null,
+                null,
+                "name" + " DESC");
+        c = cursorLoader.loadInBackground();
+        return c;
     }
 
-    private void printCheeses(Cursor cursor){
-        if(cursor.moveToFirst()){
-            do {
-                String cheeseId = cursor.getString(cursor.getColumnIndex("_id"));
-                String cheeseName = cursor.getString(cursor.getColumnIndex("name"));
+    private void printCheeses(Cursor c)
+    {
+        if (c.moveToFirst()) {
+            do{
+                String cheeseId = c.getString(c.getColumnIndex("_id"));
+                String cheeseName =  c.getString(c.getColumnIndex("name"));
                 Log.v("Content Providers", cheeseId + ", " + cheeseName);
-            }
-            while (cursor.moveToNext());
+            } while (c.moveToNext());
         }
     }
 
-    private static class  CheeseAdapter extends RecyclerView.Adapter<CheeseAdapter.ViewHolder>{
-        private Cursor cursor;
+    private static class CheeseAdapter extends RecyclerView.Adapter<CheeseAdapter.ViewHolder> {
 
-        @NonNull
+        private Cursor mCursor;
+
         @Override
+        @NonNull
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new ViewHolder(parent);
         }
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            if (cursor.moveToPosition(position)){
-                holder.mText.setText(cursor.getString(cursor.getColumnIndex("name")));
+            if (mCursor.moveToPosition(position)) {
+                holder.mText.setText(mCursor.getString(mCursor.getColumnIndex("name")));
             }
         }
 
         @Override
         public int getItemCount() {
-            return cursor == null ? 0 : cursor.getCount();
+            return mCursor == null ? 0 : mCursor.getCount();
         }
 
-        public void setCheeses(Cursor cursor) {
-            this.cursor = cursor;
+
+        void setCheeses(Cursor cursor) {
+            mCursor = cursor;
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        static class ViewHolder extends RecyclerView.ViewHolder {
+
             final TextView mText;
 
-            public ViewHolder(ViewGroup parent) {
+            ViewHolder(ViewGroup parent) {
                 super(LayoutInflater.from(parent.getContext()).inflate(
-                        android.R.layout.simple_list_item_1, parent, false
-                ));
+                        android.R.layout.simple_list_item_1, parent, false));
                 mText = itemView.findViewById(android.R.id.text1);
             }
+
         }
+
     }
 }
